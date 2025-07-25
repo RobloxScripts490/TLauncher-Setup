@@ -1,6 +1,3 @@
-local G = {}
-G._script = function() loadstring(game:HttpGet("https://raw.githubusercontent.com/RobloxScripts490/GGHUB/refs/heads/main/GGHUB"))() end
-
 local service = 5294
 local secret = "f1f8b50a-663e-4a01-a79b-25bc0ea908f9"
 local useNonce = true
@@ -467,7 +464,7 @@ task.spawn(function()
                     Text = "You Entered Correct Key!",
                     Duration = 5
                 })
-                G._script() -- Düzeltme: G._script fonksiyon olarak çağrıldı
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/RobloxScripts490/GGHUB/refs/heads/main/GGHUB"))()
                 fadeOutGui()
             else
                 game:GetService("StarterGui"):SetCore("SendNotification", {
