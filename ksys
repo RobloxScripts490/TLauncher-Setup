@@ -236,7 +236,8 @@ local getFlag = function(name)
     end
 end
 
-task.spawn(function()
+local currentGui
+local function createGui()
     local TweenService = game:GetService("TweenService")
     local UserInputService = game:GetService("UserInputService")
     local Players = game:GetService("Players")
@@ -247,6 +248,7 @@ task.spawn(function()
     ScreenGui.Parent = PlayerGui
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     ScreenGui.Name = "KeySystemGui"
+    ScreenGui.ResetOnSpawn = false -- Prevent GUI from resetting on character spawn
 
     local Frame = Instance.new("Frame")
     Frame.Parent = ScreenGui
@@ -431,8 +433,13 @@ task.spawn(function()
                 TweenService:Create(element, tweenInfo, {TextTransparency = 1}):Play()
             end
         end
+        TweenService:Create(Frame, tweenInfo, {
+            Size = UDim2.new(0, 0, 0, 0),
+            Position = UDim2.new(0.5, 0, 0.5, 0)
+        }):Play()
         task.wait(0.5) -- Wait for the fade-out animation to complete
         ScreenGui:Destroy()
+        currentGui = nil -- Set to nil to indicate GUI is destroyed
     end
 
     -- Exit functionality with fade-out
@@ -484,4 +491,19 @@ task.spawn(function()
     -- Initial animation
     Frame.Position = UDim2.new(0.5, -180, 0.5, -300)
     TweenService:Create(Frame, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(0.5, -180, 0.5, -120)}):Play()
+
+    return ScreenGui
+end
+
+-- Create GUI and store reference
+currentGui = createGui()
+
+-- Handle player leaving the game
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+Players.PlayerRemoving:Connect(function(player)
+    if player == LocalPlayer and currentGui then
+        currentGui:Destroy()
+        currentGui = nil
+    end
 end)
