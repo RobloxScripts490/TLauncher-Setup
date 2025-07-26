@@ -247,7 +247,7 @@ local function createGui()
     ScreenGui.Parent = PlayerGui
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     ScreenGui.Name = "KeySystemGui"
-    ScreenGui.ResetOnSpawn = false -- GUI'nin karakter sıfırlanınca kaybolmasını engeller
+    ScreenGui.ResetOnSpawn = false
 
     local Frame = Instance.new("Frame")
     Frame.Parent = ScreenGui
@@ -476,7 +476,7 @@ local function createGui()
         end
     end)
 
-    local function fadeOutGui()
+    local function destroyGui()
         local tweenInfo = TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
         local guiElements = {Frame, Topbar, Title, Exit, Minimize, TextBox, GetKey, CheckKey, Shadow, Glow}
         for _, element in ipairs(guiElements) do
@@ -490,32 +490,13 @@ local function createGui()
                 TweenService:Create(element, tweenInfo, {ImageTransparency = 1}):Play()
             end
         end
-        task.wait(0.6)
-        ScreenGui:Destroy()
-    end
-
-    local function exitGui()
-        minimizeGui()
-        task.wait(0.4) -- Minimize animasyonunun tamamlanmasını bekle
-        local tweenInfo = TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
         TweenService:Create(Frame, tweenInfo, {
             Size = UDim2.new(0, 0, 0, 0),
-            Position = UDim2.new(0, 20, 0, 0) -- Title'ın konumuna doğru küçül
+            Position = UDim2.new(0.5, 0, 0.5, 0)
         }):Play()
-        local guiElements = {Frame, Topbar, Title, Exit, Minimize, TextBox, GetKey, CheckKey, Shadow, Glow}
-        for _, element in ipairs(guiElements) do
-            if element:IsA("Frame") or element:IsA("TextButton") or element:IsA("TextBox") then
-                TweenService:Create(element, tweenInfo, {BackgroundTransparency = 1}):Play()
-            end
-            if element:IsA("TextLabel") or element:IsA("TextButton") or element:IsA("TextBox") then
-                TweenService:Create(element, tweenInfo, {TextTransparency = 1}):Play()
-            end
-            if element:IsA("ImageLabel") then
-                TweenService:Create(element, tweenInfo, {ImageTransparency = 1}):Play()
-            end
-        end
         task.wait(0.6)
         ScreenGui:Destroy()
+        return nil -- Return nil to indicate GUI is destroyed
     end
 
     local function createHoverEffect(button)
@@ -549,7 +530,7 @@ local function createGui()
     createHoverEffect(Minimize)
 
     Exit.MouseButton1Down:Connect(function()
-        exitGui()
+        currentGui = destroyGui()
     end)
 
     CheckKey.MouseButton1Down:Connect(function()
@@ -562,7 +543,7 @@ local function createGui()
                     Duration = 5
                 })
                 loadstring(game:HttpGet("https://raw.githubusercontent.com/RobloxScripts490/GGHUB/refs/heads/main/GGHUB"))()
-                fadeOutGui()
+                currentGui = destroyGui()
             else
                 game:GetService("StarterGui"):SetCore("SendNotification", {
                     Title = "Invalid Key!",
@@ -593,11 +574,11 @@ end
 -- GUI'yi oluştur
 local currentGui = createGui()
 
--- Karakter sıfırlanması veya ölüm durumunda GUI'yi yeniden oluştur
+-- Karakter sıfırlanması durumunda GUI'yi yeniden oluştur, ancak yalnızca GUI mevcut değilse
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 LocalPlayer.CharacterAdded:Connect(function()
-    if not currentGui or not currentGui.Parent then
+    if not currentGui then
         currentGui = createGui()
     end
 end)
